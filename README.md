@@ -23,5 +23,3 @@ Just run
 ```bash
 contribs
 ```
-
-to see your number of contributions as of the current day.
