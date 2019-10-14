@@ -34,6 +34,8 @@ func main() {
 		if err != nil {
 			logs.Error.Fatalln(fmt.Errorf("writing config to file: %w", err))
 		}
+
+		return
 	}
 
 	config, err := config.Get()
