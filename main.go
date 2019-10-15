@@ -50,7 +50,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	now := time.Now().UTC()
+	now := time.Now()
 	from := time.Date(
 		now.Year(),
 		now.Month(),
@@ -59,7 +59,7 @@ func main() {
 		0,
 		0,
 		0,
-		time.UTC,
+		time.Local,
 	)
 	to := from.Add((time.Hour * 24) - time.Second)
 
