@@ -13,11 +13,16 @@ import (
 )
 
 func main() {
-	if len(os.Args) > 1 {
-		if os.Args[1] != "set" {
-			logs.Error.Fatalln("while parsing arguments")
-		}
+	// Set mode
+	setMode := false
 
+	for _, arg := range os.Args {
+		if arg == "set" {
+			setMode = true
+		}
+	}
+
+	if setMode {
 		flags := flag.NewFlagSet("set", flag.ExitOnError)
 		apiKey := flags.String("key", "", "Set the GitHub API key.")
 		flags.Parse(os.Args[2:])
@@ -38,6 +43,11 @@ func main() {
 		return
 	}
 
+	// Default mode
+	lastYearFlag := flag.Bool("last-year", false, "Whether to show contributions made in the past year instead of the current day.")
+
+	flag.Parse()
+
 	config, err := config.Get()
 	if err != nil {
 		logs.Error.Fatalln(fmt.Errorf("reading config file: %w", err))
@@ -50,20 +60,28 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	now := time.Now()
-	from := time.Date(
-		now.Year(),
-		now.Month(),
-		now.Day(),
-		0,
-		0,
-		0,
-		0,
-		time.Local,
-	)
-	to := from.Add((time.Hour * 24) - time.Second)
+	client := github.NewClient(config.GitHubAPIKey)
 
-	numContribs, err := github.GetNumContribsByTime(ctx, config.GitHubAPIKey, from, to)
+	var numContribs int
+
+	if *lastYearFlag {
+		numContribs, err = github.GetNumContribsLastYear(ctx, client)
+	} else {
+		now := time.Now()
+		from := time.Date(
+			now.Year(),
+			now.Month(),
+			now.Day(),
+			0,
+			0,
+			0,
+			0,
+			time.Local,
+		)
+		to := from.Add((time.Hour * 24) - time.Second)
+		numContribs, err = github.GetNumContribsByTime(ctx, client, from, to)
+	}
+
 	if err != nil {
 		logs.Error.Fatalln(fmt.Errorf("fetching contribs: %w", err))
 	}

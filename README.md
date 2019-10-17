@@ -23,3 +23,10 @@ Just run
 ```bash
 contribs
 ```
+
+### Last year contributions
+If you want to see the number of contributions you made in the last year (same data presented in your GitHub profile), run with the `--last-year` flag.
+
+```bash
+contribs --last-year
+```

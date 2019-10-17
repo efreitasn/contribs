@@ -16,21 +16,31 @@ type contribsCollection struct {
 	TotalRepositoryContributions        int
 }
 
-type contribsQuery struct {
+type contribsQueryByTime struct {
 	Viewer struct {
 		ContributionsCollection contribsCollection `graphql:"contributionsCollection(from:$from,to:$to)"`
 	}
 }
 
-// GetNumContribsByTime returns the number of contributions of the user that owns the provided API key.
-func GetNumContribsByTime(ctx context.Context, apiKey string, from time.Time, to time.Time) (int, error) {
+type contribsQueryLastYear struct {
+	Viewer struct {
+		ContributionsCollection contribsCollection
+	}
+}
+
+// NewClient creates a new githubv4 client.
+func NewClient(apiKey string) *githubv4.Client {
 	src := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: apiKey},
 	)
 	httpClient := oauth2.NewClient(context.Background(), src)
-	query := new(contribsQuery)
 
-	client := githubv4.NewClient(httpClient)
+	return githubv4.NewClient(httpClient)
+}
+
+// GetNumContribsByTime returns the number of contributions made by the user as of the current day.
+func GetNumContribsByTime(ctx context.Context, client *githubv4.Client, from time.Time, to time.Time) (int, error) {
+	query := new(contribsQueryByTime)
 
 	err := client.Query(ctx, &query, map[string]interface{}{
 		"from": githubv4.DateTime(struct {
@@ -40,6 +50,20 @@ func GetNumContribsByTime(ctx context.Context, apiKey string, from time.Time, to
 			time.Time
 		}{to}),
 	})
+	if err != nil {
+		return 0, err
+	}
+
+	numContribs := sumContribs(query.Viewer.ContributionsCollection)
+
+	return numContribs, nil
+}
+
+// GetNumContribsLastYear returns the number of contributions made by the user in the last year.
+func GetNumContribsLastYear(ctx context.Context, client *githubv4.Client) (int, error) {
+	query := new(contribsQueryLastYear)
+
+	err := client.Query(ctx, &query, nil)
 	if err != nil {
 		return 0, err
 	}
