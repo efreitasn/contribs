@@ -8,20 +8,22 @@ import (
 	"golang.org/x/oauth2"
 )
 
+type contribsCollection struct {
+	TotalCommitContributions            int
+	TotalIssueContributions             int
+	TotalPullRequestContributions       int
+	TotalPullRequestReviewContributions int
+	TotalRepositoryContributions        int
+}
+
 type contribsQuery struct {
 	Viewer struct {
-		ContributionsCollection struct {
-			TotalCommitContributions            int
-			TotalIssueContributions             int
-			TotalPullRequestContributions       int
-			TotalPullRequestReviewContributions int
-			TotalRepositoryContributions        int
-		} `graphql:"contributionsCollection(from:$from,to:$to)"`
+		ContributionsCollection contribsCollection `graphql:"contributionsCollection(from:$from,to:$to)"`
 	}
 }
 
-// GetNumContribs returns the number of contributions of the user that owns the provided API key.
-func GetNumContribs(ctx context.Context, apiKey string, from time.Time, to time.Time) (int, error) {
+// GetNumContribsByTime returns the number of contributions of the user that owns the provided API key.
+func GetNumContribsByTime(ctx context.Context, apiKey string, from time.Time, to time.Time) (int, error) {
 	src := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: apiKey},
 	)
@@ -42,11 +44,15 @@ func GetNumContribs(ctx context.Context, apiKey string, from time.Time, to time.
 		return 0, err
 	}
 
-	numContribs := query.Viewer.ContributionsCollection.TotalCommitContributions +
-		query.Viewer.ContributionsCollection.TotalIssueContributions +
-		query.Viewer.ContributionsCollection.TotalPullRequestContributions +
-		query.Viewer.ContributionsCollection.TotalPullRequestReviewContributions +
-		query.Viewer.ContributionsCollection.TotalRepositoryContributions
+	numContribs := sumContribs(query.Viewer.ContributionsCollection)
 
 	return numContribs, nil
+}
+
+func sumContribs(cCollection contribsCollection) int {
+	return cCollection.TotalCommitContributions +
+		cCollection.TotalIssueContributions +
+		cCollection.TotalPullRequestContributions +
+		cCollection.TotalPullRequestReviewContributions +
+		cCollection.TotalRepositoryContributions
 }

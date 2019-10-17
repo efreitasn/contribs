@@ -63,7 +63,7 @@ func main() {
 	)
 	to := from.Add((time.Hour * 24) - time.Second)
 
-	numContribs, err := github.GetNumContribs(ctx, config.GitHubAPIKey, from, to)
+	numContribs, err := github.GetNumContribsByTime(ctx, config.GitHubAPIKey, from, to)
 	if err != nil {
 		logs.Error.Fatalln(fmt.Errorf("fetching contribs: %w", err))
 	}
