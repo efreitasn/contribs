@@ -38,7 +38,7 @@ func NewClient(apiKey string) *githubv4.Client {
 	return githubv4.NewClient(httpClient)
 }
 
-// GetNumContribsByTime returns the number of contributions made by the user as of the current day.
+// GetNumContribsByTime returns the number of contributions made by the user in the current day.
 func GetNumContribsByTime(ctx context.Context, client *githubv4.Client, from time.Time, to time.Time) (int, error) {
 	query := new(contribsQueryByTime)
 
