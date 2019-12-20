@@ -1,5 +1,5 @@
 # contribs
-contribs is a CLI app to show how many contributions you've made in the current day.
+contribs is a CLI app to show how many contributions you've made in GitHub.
 
 ## Install
 You can download one of the binaries available on the [releases page](https://github.com/efreitasn/contribs/releases) or install it using Go v1.13 or higher.
